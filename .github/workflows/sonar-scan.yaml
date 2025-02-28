@@ -12,25 +12,42 @@ on:
 jobs:
   sonar-scan:
     runs-on: ubuntu-latest
+    concurrency:
+      group: sonar-scan-${{ github.ref }}
+      cancel-in-progress: true
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
           go-version: '1.21'  # Adjust Go version if needed
 
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: ~/go/pkg/mod
+          key: go-mod-${{ runner.os }}-${{ hashFiles('**/go.sum') }}
+          restore-keys: go-mod-${{ runner.os }}-
+
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'  # Adjust Node.js version if needed
 
+      - name: Cache Node.js dependencies
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: node-modules-${{ runner.os }}-
+
       - name: Install dependencies
         run: |
           go mod tidy
-          npm install
+          npm ci
 
       - name: SonarQube Scan
         uses: sonarsource/sonarqube-scan-action@master
