@@ -1,61 +1,29 @@
-name: SonarQube Code Scan
-
 on:
   push:
     branches:
       - main
+      - master
+      - develop
   pull_request:
-    branches:
-      - main
-  workflow_dispatch:
+    types: [opened, synchronize, reopened]
+
+name: SonarQube Scan
 
 jobs:
-  sonar-scan:
+  sonarqube:
     runs-on: ubuntu-latest
-    concurrency:
-      group: sonar-scan-${{ github.ref }}
-      cancel-in-progress: true
-
     steps:
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v4
         with:
-          go-version: '1.21'  # Adjust Go version if needed
-
-      - name: Cache Go modules
-        uses: actions/cache@v3
-        with:
-          path: ~/go/pkg/mod
-          key: go-mod-${{ runner.os }}-${{ hashFiles('**/go.sum') }}
-          restore-keys: go-mod-${{ runner.os }}-
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'  # Adjust Node.js version if needed
-
-      - name: Cache Node.js dependencies
-        uses: actions/cache@v3
-        with:
-          path: node_modules
-          key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-          restore-keys: node-modules-${{ runner.os }}-
-
-      - name: Install dependencies
-        run: |
-          go mod tidy
-          npm ci
+          fetch-depth: 0
 
       - name: SonarQube Scan
-        uses: sonarsource/sonarqube-scan-action@master
+        uses: SonarSource/sonarqube-scan-action@v4.1.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
         with:
-          projectBaseDir: .
           args: >
             -Dsonar.projectKey=arasu-devops_memos_16a77078-475d-4c6e-b638-496f46fbe25d
-            -Dsonar.sources=.
-            -Dsonar.language=Go
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+
