@@ -5,7 +5,7 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
-name: SonarQube and Docker Build
+name: SonarQube scan
 
 jobs:
   sonarqube:
@@ -16,7 +16,7 @@ jobs:
         with:
           fetch-depth: 0
   
-      - name: SonarQube Scan (with Debug)
+      - name: SonarQube Scan (with debug)
         uses: SonarSource/sonarqube-scan-action@v4.1.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
