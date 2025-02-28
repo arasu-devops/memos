@@ -2,8 +2,6 @@ on:
   push:
     branches:
       - main
-      - master
-      - develop
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -18,7 +16,7 @@ jobs:
         with:
           fetch-depth: 0
   
-      - name: SonarQube Scan
+      - name: SonarQube Scan (with Debug)
         uses: SonarSource/sonarqube-scan-action@v4.1.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -26,6 +24,8 @@ jobs:
         with:
           args: >
             -Dsonar.projectKey=arasu-devops_memos_16a77078-475d-4c6e-b638-496f46fbe25d
+            -Dsonar.verbose=true
+            -X  # Enables full debug logging
 
   docker-build:
     runs-on: ubuntu-latest
